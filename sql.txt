@@ -1,0 +1,106 @@
+-- Создание таблицы партнеров
+CREATE TABLE partners (
+    partner_id SERIAL PRIMARY KEY,
+    partner_type VARCHAR(50) NOT NULL,
+    partner_name VARCHAR(255) NOT NULL UNIQUE,
+    director VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL UNIQUE,
+    legal_address TEXT NOT NULL,
+    rating INTEGER CHECK (rating BETWEEN 1 AND 10)
+);
+
+-- Заполнение данными
+INSERT INTO partners (partner_type, partner_name, director, contact_person, email, phone, legal_address, rating)
+VALUES 
+('ООО', 'Семейная аптека «Апрель»', 'Иванова Александра Ивановна', 'Иванова Александра Ивановна', 'aleksandraivanova@ml.ru', '493 123 45 67', '652050, Кемеровская область, город Юрга, ул. Лесная, 15', 7),
+('ООО', 'Ригла', 'Петров Василий Петрович', 'Сидоркин Иван Михайлович', 'vppetrov@vl.ru', '987 123 56 78', '164500, Архангельская область, город Северодвинск, ул. Строителей, 18', 8),
+('ОАО', 'Наша аптека', 'Воробьева Екатерина Валерьевна', 'Воробьева Екатерина Валерьевна', 'ekaterina.vorobeva@ml.ru', '444 222 33 11', '143960, Московская область, город Реутов, ул. Свободы, 51', 5),
+('ЗАО', 'Аптека плюс', 'Степанов Степан Сергеевич', 'Степанов Степан Сергеевич', 'stepanov@stepan.ru', '912 888 33 33', '309500, Белгородская область, город Старый Оскол, ул. Рабочая, 122', 10);
+
+-- Создание таблицы продукции
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    product_type VARCHAR(100) NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    manufacturer VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    release_form TEXT NOT NULL,
+    expiry_date VARCHAR(10),
+    price NUMERIC(10, 2) NOT NULL,
+    package VARCHAR(50),
+    stock_quantity INTEGER NOT NULL
+);
+
+-- Заполнение данными
+INSERT INTO products (product_type, product_name, manufacturer, category, release_form, expiry_date, price, package, stock_quantity)
+VALUES 
+('Лекарственные средства', 'Арбидол Максимум', 'Отисифарм Про АО, Россия', 'Противовирусное средство', 'капсулы 200 мг 20 шт', '10.2026', 950.00, '40', 38),
+('Лекарственные средства', 'Арбидол Максимум', 'Отисифарм Про АО, Россия', 'Противовирусное средство', 'капсулы 200 мг 10 шт', '09.2026', 500.00, '45', 38),
+('Витамины и бады', 'Турбослим Экспресс', 'Эвалар, Россия', 'Похудение', 'капсулы 200 мг 18 шт', '09.2026', 1000.00, '30', 50),
+('Витамины и бады', 'Омега-3 из дикого камчатского лосося', 'Тымлатский Рыбокомбинат, Россия', 'БАД', 'капсулы 1000 мг, 160 шт.', '06.2025', 1550.00, '25', 10),
+('Медицинские изделия', 'Вольтарен пластырь трансдермальный', 'Доджин Ияку-Како, Япония', 'пластырь', 'пластырь 15 мг 5 шт.', '02.2026', 520.00, '60', 20),
+('Лекарственные средства', 'Випросал В', 'Гриндекс, Эстония', 'Заболевания опорно-двигательного аппарата', 'мазь 30 г', '10.2026', 490.00, '55', 24);
+
+-- Создание таблицы продаж (ИСПРАВЛЕНО)
+CREATE TABLE sales (
+    sale_id SERIAL PRIMARY KEY,
+    partner_id VARCHAR(255) NOT NULL REFERENCES partners(partner_id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products(product_id) ON DELETE CASCADE, -- Исправлен тип и ссылка
+    total_amount NUMERIC(10, 2) NOT NULL,
+    sale_date TIMESTAMP NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0)
+);
+
+-- Заполнение данными (ИСПРАВЛЕНО - product_name заменен на product_id)
+INSERT INTO sales (partner_id, product_id, total_amount, sale_date, quantity)
+VALUES 
+('Семейная аптека «Апрель»', 1, 114000, '2023-03-23 00:00:00', 3),
+('Семейная аптека «Апрель»', 2, 77500, '2023-12-18 00:00:00', 2),
+('Семейная аптека «Апрель»', 3, 26950, '2024-06-07 00:00:00', 1),
+('Ригла', 1, 114000, '2022-12-02 00:00:00', 3),
+('Ригла', 4, 22500, '2023-05-17 00:00:00', 1),
+('Ригла', 5, 30000, '2024-06-07 00:00:00', 1),
+('Ригла', 6, 31200, '2024-07-01 00:00:00', 1),
+('Наша аптека', 1, 38000, '2023-01-22 00:00:00', 1),
+('Наша аптека', 4, 22500, '2024-07-05 00:00:00', 1),
+('Аптека плюс', 4, 22500, '2023-09-19 00:00:00', 1),
+('Аптека плюс', 5, 77500, '2023-11-10 00:00:00', 2),
+('Аптека плюс', 4, 45000, '2024-04-15 00:00:00', 2);
+
+-- Создание таблицы сотрудников
+CREATE TABLE users (
+    users_id SERIAL PRIMARY KEY,
+    users_name VARCHAR(255) NOT NULL UNIQUE,
+    birth_date DATE NOT NULL,
+    passport_data VARCHAR(20) NOT NULL UNIQUE, -- Увеличена длина
+    education VARCHAR,
+    phone VARCHAR(16) NOT NULL UNIQUE,
+    address VARCHAR NOT NULL,
+    login VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+-- Тестовые данные
+INSERT INTO users (users_name, birth_date, passport_data, education, phone, address, login, password)
+VALUES 
+('Иванов Иван Иванович', '1990-05-15', '1234 567890', 'Высшее', '+7(999)123-45-67', 'г. Москва, ул. Пушкина, 10', 'none', 'none'),
+('Петрова Мария Сергеевна', '1985-08-20', '0987 654321', 'Среднее специальное', '+7(999)765-43-21', 'г. Санкт-Петербург, ул. Лермонтова, 5', 'none2', 'none2');
+
+-- Создание таблицы поставщиков
+CREATE TABLE suppliers (
+    supplier_id SERIAL PRIMARY KEY,
+    supplier_type VARCHAR(50) NOT NULL,
+    supplier_name VARCHAR(255) NOT NULL UNIQUE,
+    supply_history VARCHAR
+);
+
+-- Заполнение данными
+INSERT INTO suppliers (supplier_type, supplier_name, supply_history)
+VALUES 
+('Производитель', 'Отисифарм Про АО, Россия', 'Поставки лекарственных средств'),
+('Производитель', 'Эвалар, Россия', 'Поставки витаминов и БАДов'),
+('Производитель', 'Тымлатский Рыбокомбинат, Россия', 'Поставки БАДов'),
+('Производитель', 'Доджин Ияку-Како, Япония', 'Поставки медицинских изделий'),
+('Производитель', 'Гриндекс, Эстония', 'Поставки лекарственных средств');
